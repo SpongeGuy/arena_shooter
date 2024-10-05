@@ -64,6 +64,48 @@ function player:shoot()
 	table.insert(bullets, bullet)
 end
 
+local pentagron = {
+	vertices = {20, 20, -20, 20, -20, -40,},
+	draw_offset = {1000, 500},
+	angle = 0.01,
+	center_x = 0,
+	center_y = 0,
+}
+
+function vector_rotate(x, y, cx, cy, angle)
+	local s = math.sin(angle)
+	local c = math.cos(angle)
+
+	x = x - cx
+	y = y - cy
+
+	local xnew = x * c - y * s
+	local ynew = x * s + y * c
+
+	x = xnew + cx
+	y = ynew + cy
+	return x, y
+end
+
+function transform(dt, shape)
+	shape.angle = shape.angle
+	for i = 1, #shape.vertices, 2 do
+		shape.vertices[i], shape.vertices[i+1] = vector_rotate(shape.vertices[i], shape.vertices[i+1], shape.center_x, shape.center_y, shape.angle)
+	end
+end
+
+function offset(vector, offset)
+	local v = {}
+	for _, value in ipairs(vector) do
+		table.insert(v, value)
+	end
+	for i = 1, #v, 2 do
+		v[i] = v[i] + offset[1]
+		v[i + 1] = v[i + 1] + offset[2]
+	end
+	return v
+end
+
 function love.update(dt)
 	fps = love.timer.getFPS()
 	player.direction = player:control()
@@ -80,13 +122,15 @@ function love.update(dt)
 		player:shoot()
 		player.shot_timer = love.timer.getTime()
 	end
+
+	transform(dt, pentagron)
 end
 
 function love.draw()
-	love.graphics.print(fps, 0, 0)
 	love.graphics.rectangle('fill', player.coordinates[1], player.coordinates[2], player.size, player.size)
 	for i = #bullets, 1, -1 do
 		local b = bullets[i]
 		love.graphics.circle('fill', b.coordinates[1], b.coordinates[2], b.size)
 	end
+	love.graphics.polygon('fill', offset(pentagron.vertices, pentagron.draw_offset))
 end

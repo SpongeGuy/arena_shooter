@@ -65,6 +65,8 @@ end
 
 -- if not (max(A) < min(B) and max(B) < min(A)) for all axes then shape A and B are touching
 
+-- make a system to create polygons from defined vertices
+
 function vector:print(vector)
 	local m = 1 -- columns
 	local n = 1 -- rows
