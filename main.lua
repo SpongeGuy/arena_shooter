@@ -13,6 +13,8 @@ local player = {
 	direction = {x = 0, y = 0},
 	size = 16,
 	speed = 250,
+	shot_timer = love.timer.getTime(),
+	attack_speed = 0.25
 }
 
 function player:control()
@@ -32,31 +34,8 @@ function player:control()
 	return vector
 end
 
-function love.update(dt)
-	fps = love.timer.getFPS()
-	player.direction = player:control()
-	player.coordinates.x = player.coordinates.x + player.direction.x * dt
-	player.coordinates.y = player.coordinates.y + player.direction.y * dt
-	for i = #bullets, 1, -1 do
-		local b = bullets[i]
-		b:update(dt)
-		if b.kill then
-			table.remove(bullets, i)
-		end
-	end
-end
-
-function love.draw()
-	love.graphics.print(fps, 0, 0)
-	love.graphics.rectangle('fill', player.coordinates.x, player.coordinates.y, player.size, player.size)
-	for i = #bullets, 1, -1 do
-		local b = bullets[i]
-		love.graphics.circle('fill', b.coordinates.x, b.coordinates.y, b.size)
-	end
-end
-
-function love.mousepressed(x, y, button)
-	local mouse_coordinates = {x = x, y = y}
+function player:shoot()
+	local mouse_coordinates = {x = love.mouse.getX(), y = love.mouse.getY()}
 	local bullet = {
 		coordinates = {
 			x = player.coordinates.x + (player.size / 2), 
@@ -77,4 +56,36 @@ function love.mousepressed(x, y, button)
 		end
 	end
 	table.insert(bullets, bullet)
+end
+
+function love.update(dt)
+	fps = love.timer.getFPS()
+	player.direction = player:control()
+	player.coordinates.x = player.coordinates.x + player.direction.x * dt
+	player.coordinates.y = player.coordinates.y + player.direction.y * dt
+	for i = #bullets, 1, -1 do
+		local b = bullets[i]
+		b:update(dt)
+		if b.kill then
+			table.remove(bullets, i)
+		end
+	end
+	if love.mouse.isDown(1) and love.timer.getTime() - player.shot_timer > player.attack_speed then
+		player:shoot()
+		player.shot_timer = love.timer.getTime()
+	end
+end
+
+function love.draw()
+	love.graphics.print(fps, 0, 0)
+	love.graphics.rectangle('fill', player.coordinates.x, player.coordinates.y, player.size, player.size)
+	for i = #bullets, 1, -1 do
+		local b = bullets[i]
+		love.graphics.circle('fill', b.coordinates.x, b.coordinates.y, b.size)
+	end
+end
+
+function love.mousepressed(x, y, button)
+	local mouse_coordinates = {x = x, y = y}
+	
 end
