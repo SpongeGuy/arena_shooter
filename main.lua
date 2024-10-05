@@ -1,3 +1,5 @@
+local v = require 'lib/vector'
+
 WINDOW_WIDTH = 1920
 WINDOW_HEIGHT = 1080
 
@@ -30,58 +32,6 @@ function player:control()
 	return vector
 end
 
-
-
-function vec2_normalize(vector)
-	local x, y = vector.x, vector.y
-	local magnitude = math.sqrt(x*x + y*y)
-
-	if magnitude == 0 then
-		return {x = 0, y = 0}
-	end
-
-	local nx = x / magnitude
-	local ny = y / magnitude
-
-	return {x = nx, y = ny}
-
-end
-
-function vec2_diff_vec2(vector1, vector2)
-	-- this is good for finding the distance between two coordinates
-	local nvector = {}
-	nvector.x = vector2.x - vector1.x
-	nvector.y = vector2.y - vector1.y
-	return nvector
-end
-												
-function shoot(vector)
-
-end
-
-function vec2_mult_scalar(vector, factor)
-	local nvector = {}
-	nvector.x = vector.x * factor
-	nvector.y = vector.y * factor
-	return nvector
-end
-
-function vec2_mult_vec2(vector1, vector2)
-	local nvector = {}
-	nvector.x = vector1.x * vector2.x
-	nvector.y = vector1.y * vector2.y
-	return nvector
-end
-
-function vec2_add_vec2(vector1, vector2)
-	local nvector = {}
-	nvector.x = vector1.x + vector2.x
-	nvector.y = vector1.y + vector2.y
-	return nvector
-end
-
-
-
 function love.update(dt)
 	fps = love.timer.getFPS()
 	player.direction = player:control()
@@ -112,7 +62,7 @@ function love.mousepressed(x, y, button)
 			x = player.coordinates.x + (player.size / 2), 
 			y = player.coordinates.y + (player.size / 2)
 		},
-		direction = vec2_add_vec2(vec2_mult_scalar(vec2_normalize(vec2_diff_vec2(vec2_add_vec2(player.coordinates, {x = player.size / 2, y = player.size / 2}), mouse_coordinates)), 500), vec2_mult_scalar(vec2_normalize(player.direction), 250)),
+		direction = v:vec2_add_vec2(v:vec2_mult_scalar(v:vec2_normalize(v:vec2_diff_vec2(v:vec2_add_vec2(player.coordinates, {x = player.size / 2, y = player.size / 2}), mouse_coordinates)), 500), v:vec2_mult_scalar(v:vec2_normalize(player.direction), 250)),
 		size = 8,
 		kill = false,
 	}
