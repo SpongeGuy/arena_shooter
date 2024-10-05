@@ -11,25 +11,27 @@ end
 local player = {
 	coordinates = {x = 0, y = 0},
 	direction = {x = 0, y = 0},
-	size = 16,
-	speed = 250,
+	size = 24,
+	move_speed = 250,
+	
 	shot_timer = love.timer.getTime(),
-	attack_speed = 0.25
+	attack_speed = 0.25,
+	shot_size = 8,
 }
 
 function player:control()
 	local vector = {x = 0, y = 0}
 	if love.keyboard.isDown('w') then
-		vector.y = vector.y - player.speed
+		vector.y = vector.y - player.move_speed
 	end
 	if love.keyboard.isDown('a') then
-		vector.x = vector.x - player.speed
+		vector.x = vector.x - player.move_speed
 	end
 	if love.keyboard.isDown('s') then
-		vector.y = vector.y + player.speed
+		vector.y = vector.y + player.move_speed
 	end
 	if love.keyboard.isDown('d') then
-		vector.x = vector.x + player.speed
+		vector.x = vector.x + player.move_speed
 	end
 	return vector
 end
@@ -41,8 +43,10 @@ function player:shoot()
 			x = player.coordinates.x + (player.size / 2), 
 			y = player.coordinates.y + (player.size / 2)
 		},
+		-- direction is (player pos - mouse pos) * 500 + (player direction)
 		direction = v:vec2_add_vec2(v:vec2_mult_scalar(v:vec2_normalize(v:vec2_diff_vec2(v:vec2_add_vec2(player.coordinates, {x = player.size / 2, y = player.size / 2}), mouse_coordinates)), 500), v:vec2_mult_scalar(v:vec2_normalize(player.direction), 250)),
-		size = 8,
+		
+		size = player.shot_size,
 		kill = false,
 	}
 	function bullet:update(dt)
@@ -83,9 +87,4 @@ function love.draw()
 		local b = bullets[i]
 		love.graphics.circle('fill', b.coordinates.x, b.coordinates.y, b.size)
 	end
-end
-
-function love.mousepressed(x, y, button)
-	local mouse_coordinates = {x = x, y = y}
-	
 end
