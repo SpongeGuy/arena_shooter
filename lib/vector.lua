@@ -43,8 +43,44 @@ function vector:vec2_normalize(vector)
 	return {nx, ny}
 end
 
-function vector:print(vector)
+function vector:get_dims(vector)
+	local vn, vm = 0, 0
+	for n = 1, #vector do
+		if type(vector[n]) == 'table' then
+			for m = 1, #vector[n] do
+				if m > vm then vm = m end
+			end
+			if n > vn then vn = n end
+		else
+			if n > vm then vm = n end
+			vn = 1
+		end
+	end
+	return {vn, vm}
+end
 
+-- dot product of
+-- unit vector along an axis (which is the difference between two adjacent vertices (first vertex has to have a greater magnitude than the 2nd))
+-- vector of a point on the shape
+
+-- if not (max(A) < min(B) and max(B) < min(A)) for all axes then shape A and B are touching
+
+function vector:print(vector)
+	local m = 1 -- columns
+	local n = 1 -- rows
+	-- matrices must be rectangular
+	for m = 1, #vector do
+		if type(vector[m]) == 'table' then
+			local str = ""
+			for n = 1, #vector[m] do
+				str = str .. vector[m][n] .. "\t"
+			end
+			print(str)
+		else
+			print(vector[m])
+		end
+	end
+	print("\n")
 end
 
 return vector
