@@ -69,6 +69,8 @@ function polygon:translate(dt, polygon, vector)
 end
 
 function polygon:create(vertices, rotation_speed)
+	-- when creating polygons, try to create vertices table starting at the bottom leftmost coordinate
+	-- fill the table out with vertices working clockwise spatially
 	local p = {}
 	p.vertices = vertices
 	p.rotation_speed = rotation_speed
@@ -77,7 +79,7 @@ function polygon:create(vertices, rotation_speed)
 	return p
 end
 
-function polygon:print_coordinates(vertices)
+function polygon:debug_render_coordinates(vertices)
 	local r, g, b, a = love.graphics.getColor()
 	love.graphics.setColor(0, 1, 0)
 	for i = 1, #vertices, 2 do
@@ -85,6 +87,10 @@ function polygon:print_coordinates(vertices)
 		love.graphics.print("y:"..vertices[i+1], vertices[i], vertices[i+1] + 10)
 	end
 	love.graphics.setColor(r, g, b, a)
+end
+
+function polygon:debug_render_bounding_box(polygon)
+	love.graphics.rectangle('line', polygon.bounding_box[1], polygon.bounding_box[2], polygon.bounding_box[3] - polygon.bounding_box[1], polygon.bounding_box[4] - polygon.bounding_box[2])
 end
 
 return polygon
