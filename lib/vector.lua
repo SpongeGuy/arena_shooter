@@ -43,4 +43,6 @@ function vec2:normalize(vector)
 	return {nx, ny}
 end
 
+
+
 return vec2

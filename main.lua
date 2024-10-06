@@ -128,8 +128,12 @@ function love.draw()
 	end
 
 	love.graphics.polygon('fill', pentagron.vertices)
+	if polygon:AABB_collision(player, pentagron) then
+		love.graphics.setColor(1, 0, 0)
+	end
 	polygon:debug_render_bounding_box(pentagron)
 	polygon:debug_render_coordinates(pentagron.vertices)
+	love.graphics.setColor(1, 1, 1)
 
 	love.graphics.polygon('fill', cuber.vertices)
 	
