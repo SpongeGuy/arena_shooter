@@ -31,8 +31,8 @@ function polygon:get_centroid(polygon)
 end
 
 
-function polygon:rotate(dt, polygon)
-	local angle = polygon.rotation_speed * dt
+function polygon:rotate(dt, polygon, scalar)
+	local angle = scalar * dt
 	local s = math.sin(angle)
 	local c = math.cos(angle)
 
@@ -77,6 +77,15 @@ function polygon:create(vertices, rotation_speed)
 	p.center = polygon:get_centroid(p)
 	p.bounding_box = polygon:get_bounding_box(p)
 	return p
+end
+
+function polygon:scale(polygon, scalar)
+	for i = 1, #polygon.vertices do
+		polygon.vertices[i] = polygon.vertices[i] * scalar
+	end
+	for i = 1, #polygon.center do
+		polygon.center[i] = polygon.center[i] * (scalar)
+	end
 end
 
 function polygon:debug_render_coordinates(vertices)

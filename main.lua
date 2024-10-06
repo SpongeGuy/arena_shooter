@@ -16,7 +16,7 @@ end
 function create_player(vertices)
 	local player = {}
 	player.vertices = vertices
-	player.rotation_speed = 0
+	player.rotation_speed = 5
 	player.center = polygon:get_centroid(player)
 	player.bounding_box = polygon:get_bounding_box(player)
 	
@@ -40,6 +40,7 @@ local cuber = polygon:create(p_square, 0)
 
 local p_player = {20, 36, 20, 20, 36, 20, 36, 36}
 local player = create_player(p_player)
+polygon:scale(player, 2)
 
 print(player.center[1], player.center[2])
 
@@ -94,6 +95,7 @@ function love.update(dt)
 	
 	player.direction = player:control()
 	polygon:translate(dt, player, player.direction)
+	polygon:rotate(dt, player, player.rotation_speed)
 	player.bounding_box = polygon:get_bounding_box(player)
 	
 	for i = #bullets, 1, -1 do
@@ -109,7 +111,7 @@ function love.update(dt)
 	end
 
 	--polygon:translate(dt, pentagron, {25, -40})
-	polygon:rotate(dt, pentagron)
+	polygon:rotate(dt, pentagron, pentagron.rotation_speed)
 	pentagron.bounding_box = polygon:get_bounding_box(pentagron)
 
 end
@@ -117,8 +119,8 @@ end
 function love.draw()
 	love.graphics.setColor(1, 1, 1)
 
-	--love.graphics.polygon('fill', player.vertices)
-	polygon:debug_render_bounding_box(player)
+	love.graphics.polygon('fill', player.vertices)
+	--polygon:debug_render_bounding_box(player)
 	
 	for i = #bullets, 1, -1 do
 		local b = bullets[i]
