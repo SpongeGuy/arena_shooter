@@ -16,7 +16,7 @@ end
 function create_player(vertices)
 	local player = {}
 	player.vertices = vertices
-	player.rotation_speed = 5
+	player.rotation_speed = 1
 	player.center = polygon:get_centroid(player)
 	player.bounding_box = polygon:get_bounding_box(player)
 	
@@ -35,7 +35,7 @@ end
 local p_vert = {600, 520, 550, 550, 400, 520, 370, 350, 480, 300, 600, 350, 625, 450}
 local pentagron = polygon:create(p_vert, 0.1)
 
-local p_square = { 200, 250, 200, 200, 250, 200,  250, 250,}
+local p_square = {200, 250, 150, 200, 200, 150, 250, 200, 250, 250}
 local cuber = polygon:create(p_square, 0)
 
 local p_player = {20, 36, 20, 20, 36, 20, 36, 36}
@@ -88,8 +88,6 @@ end
 
 
 
-
-
 function love.update(dt)
 	fps = love.timer.getFPS()
 	
@@ -137,8 +135,16 @@ function love.draw()
 
 	love.graphics.polygon('fill', cuber.vertices)
 	
+	local v1 = {player.vertices[1], player.vertices[2]}
+	local v2 = {player.vertices[3], player.vertices[4]}
+	love.graphics.print(tostring(vec2:get_slope(v1, v2)), 0, 60)
+	local m = vec2:diff_vec2(v2, v1)
+	love.graphics.print(tostring(m[2] / m[1]), 0, 80)
+
 
 	love.graphics.setColor(0, 1, 0)
+	love.graphics.circle('fill', v1[1], v1[2], 3)
+	love.graphics.circle('fill', v2[1], v2[2], 3)
 	love.graphics.print(love.mouse.getX(), love.mouse.getX() + 30, love.mouse.getY() + 30)
 	love.graphics.print(love.mouse.getY(), love.mouse.getX() + 60, love.mouse.getY() + 30)
 end

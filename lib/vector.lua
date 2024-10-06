@@ -29,6 +29,11 @@ function vec2:add_vec2(vector1, vector2)
 	return nvector
 end
 
+function vec2:axis_projection(unit_vector, point)
+	-- projects a point onto the axis provided by the unit_vector
+	-- uses dot product algorithm
+end
+
 function vec2:normalize(vector)
 	local x, y = vector[1], vector[2]
 	local magnitude = math.sqrt(x*x + y*y)

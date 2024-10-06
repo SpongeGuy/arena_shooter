@@ -23,9 +23,9 @@ function polygon:AABB_collision(polygon1, polygon2)
 	local box2_h = box2[4] - box2[2]
 
 	if box1[1] + box1_w < box2[1] then return false end
-	if box2[2] + box2_h < box1[2] then return false end
-	if box2[1] + box2_w < box1[1] then return false end
 	if box1[2] + box1_h < box2[2] then return false end
+	if box2[1] + box2_w < box1[1] then return false end
+	if box2[2] + box2_h < box1[2] then return false end
 	return true
 end
 
