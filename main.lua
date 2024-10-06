@@ -17,7 +17,7 @@ local player = {
 	move_speed = 250,
 	
 	shot_timer = love.timer.getTime(),
-	attack_speed = 0.25,
+	attack_speed = 0.1,
 	shot_size = 8,
 }
 
@@ -65,11 +65,10 @@ function player:shoot()
 end
 
 local pentagron = {
-	vertices = {20, 20, -20, 20, -20, -40,},
-	draw_offset = {1000, 500},
-	angle = 0.01,
-	center_x = 0,
-	center_y = 0,
+	vertices = {520, 520, 480, 520, 480, 460,},
+	rotation_speed = 1, -- rotation at radians per frame
+	center_x = 500,
+	center_y = 500,
 }
 
 function vector_rotate(x, y, cx, cy, angle)
@@ -88,9 +87,9 @@ function vector_rotate(x, y, cx, cy, angle)
 end
 
 function transform(dt, shape)
-	shape.angle = shape.angle
+	local angle = shape.rotation_speed * dt
 	for i = 1, #shape.vertices, 2 do
-		shape.vertices[i], shape.vertices[i+1] = vector_rotate(shape.vertices[i], shape.vertices[i+1], shape.center_x, shape.center_y, shape.angle)
+		shape.vertices[i], shape.vertices[i+1] = vector_rotate(shape.vertices[i], shape.vertices[i+1], shape.center_x, shape.center_y, angle)
 	end
 end
 
@@ -132,5 +131,5 @@ function love.draw()
 		local b = bullets[i]
 		love.graphics.circle('fill', b.coordinates[1], b.coordinates[2], b.size)
 	end
-	love.graphics.polygon('fill', offset(pentagron.vertices, pentagron.draw_offset))
+	love.graphics.polygon('fill', pentagron.vertices)
 end
