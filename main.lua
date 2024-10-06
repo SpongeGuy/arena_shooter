@@ -65,7 +65,7 @@ function player:shoot()
 	table.insert(bullets, bullet)
 end
 
-local p_vert = {600, 520, 400, 520, 370, 350,  480, 300, 600, 350}
+local p_vert = {600, 520, 550, 550, 400, 520, 370, 350, 480, 300, 600, 350, 625, 450}
 local pentagron = polygon:create(p_vert, 0.1)
 
 
@@ -86,13 +86,14 @@ function love.update(dt)
 		player.shot_timer = love.timer.getTime()
 	end
 
-	polygon:translate(dt, pentagron, {25, -40})
+	--polygon:translate(dt, pentagron, {25, -40})
 	polygon:rotate(dt, pentagron)
 	pentagron.bounding_box = polygon:get_bounding_box(pentagron)
 
 end
 
 function love.draw()
+	love.graphics.setColor(1, 1, 1)
 	love.graphics.rectangle('fill', player.coordinates[1], player.coordinates[2], player.size, player.size)
 	for i = #bullets, 1, -1 do
 		local b = bullets[i]
@@ -100,6 +101,7 @@ function love.draw()
 	end
 	love.graphics.polygon('fill', pentagron.vertices)
 	love.graphics.rectangle('line', pentagron.bounding_box[1], pentagron.bounding_box[2], pentagron.bounding_box[3] - pentagron.bounding_box[1], pentagron.bounding_box[4] - pentagron.bounding_box[2])
+	polygon:print_coordinates(pentagron.vertices)
 	love.graphics.print(love.mouse.getX(), love.mouse.getX() + 30, love.mouse.getY() + 30)
 	love.graphics.print(love.mouse.getY(), love.mouse.getX() + 60, love.mouse.getY() + 30)
 end
