@@ -14,7 +14,20 @@ function polygon:get_bounding_box(polygon)
 	return {x_min, y_min, x_max, y_max}
 end
 
+function polygon:AABB_collision(polygon1, polygon2)
+	local box1 = polygon1.bounding_box
+	local box1_w = box1[3] - box1[1]
+	local box1_h = box1[4] - box1[2]
+	local box2 = polygon2.bounding_box
+	local box2_w = box2[3] - box2[1]
+	local box2_h = box2[4] - box2[2]
 
+	if box1[1] + box1_w < box2[1] then return false end
+	if box1[2] + box1_h < box2[2] then return false end
+	if box2[1] + box2_w < box1[1] then return false end
+	if box2[2] + box2_h < box1[2] then return false end
+	return true
+end
 
 function polygon:get_centroid(polygon)
 	local sum_x = 0
