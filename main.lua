@@ -1,4 +1,4 @@
-local v = require 'lib/vector'
+local vec2 = require 'lib/vector'
 local polygon = require 'lib/polygon'
 require 'lib/errorexplorer'
 
@@ -47,7 +47,7 @@ function player:shoot()
 			player.coordinates[2] + (player.size / 2)
 		},
 		-- direction is (player pos - mouse pos) * 500 + (player direction)
-		direction = v:vec2_add_vec2(v:vec2_mult_scalar(v:vec2_normalize(v:vec2_diff_vec2(v:vec2_add_vec2(player.coordinates, {player.size / 2, player.size / 2}), mouse_coordinates)), 500), v:vec2_mult_scalar(v:vec2_normalize(player.direction), 250)),
+		direction = vec2:add_vec2(vec2:mult_scalar(vec2:normalize(vec2:diff_vec2(vec2:add_vec2(player.coordinates, {player.size / 2, player.size / 2}), mouse_coordinates)), 500), vec2:mult_scalar(vec2:normalize(player.direction), 250)),
 		
 		size = player.shot_size,
 		kill = false,
