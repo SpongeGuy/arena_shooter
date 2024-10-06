@@ -40,7 +40,7 @@ local cuber = polygon:create(p_square, 0)
 
 local p_player = {20, 36, 20, 20, 36, 20, 36, 36}
 local player = create_player(p_player)
-polygon:scale(player, 2)
+polygon:scale(player, 1.5)
 
 print(player.center[1], player.center[2])
 
