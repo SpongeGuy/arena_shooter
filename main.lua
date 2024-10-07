@@ -16,7 +16,7 @@ end
 function create_player(vertices)
 	local player = {}
 	player.vertices = vertices
-	player.rotation_speed = 0
+	player.rotation_speed = 25
 	player.center = polygon:get_centroid(player)
 	player.bounding_box = polygon:get_bounding_box(player)
 	
@@ -33,15 +33,13 @@ end
 
 
 local p_vert = {600, 400, 550, 600, 400, 520}
-local pentagron = polygon:create(p_vert, 0)
+local pentagron = polygon:create(p_vert, 2)
 
 local p_square = {200, 250, 150, 200, 200, 150, 250, 200, 250, 250}
 local cuber = polygon:create(p_square, 0)
 
-local p_player = {583, 554, 583, 529, 608, 529, } --354, 429
+local p_player = {583, 554, 583, 529, 608, 529, 608, 554} 
 local player = create_player(p_player)
-
-print(player.center[1], player.center[2])
 
 function player:control()
 	local vector = {0, 0}
@@ -128,14 +126,14 @@ function love.draw()
 	end
 
 	if polygon:SAT_collision(player, pentagron) then
-		love.graphics.setColor(1, 0, 0)
+		if polygon:AABB_collision(player, pentagron) then
+			love.graphics.setColor(1, 0, 0)
+		end
 	end
 	love.graphics.polygon('fill', player.vertices)
 	love.graphics.polygon('fill', pentagron.vertices)
 	love.graphics.setColor(1, 1, 1)
-	if polygon:AABB_collision(player, pentagron) then
-		love.graphics.setColor(1, 0, 0)
-	end
+	
 	polygon:debug_render_bounding_box(pentagron)
 	polygon:debug_render_coordinates(pentagron.vertices)
 	love.graphics.setColor(1, 1, 1)

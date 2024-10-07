@@ -60,7 +60,6 @@ function polygon:SAT_collision(polygon1, polygon2)
 		local dots2 = {}
 		for j = 1, #polygon1.vertices, 2 do
 			local dot = vec2:mult_dot({-unit_vectors[i+1], unit_vectors[i]}, {polygon1.vertices[j], polygon1.vertices[j+1]})
-			print(unit_vectors[i], unit_vectors[i+1], dot)
 			table.insert(dots1, dot)
 		end
 
@@ -72,8 +71,6 @@ function polygon:SAT_collision(polygon1, polygon2)
 		if math.max(unpack(dots1)) < math.min(unpack(dots2)) then return false end
 		if math.max(unpack(dots2)) < math.min(unpack(dots1)) then return false end
 	end
-
-	print()
 	
 	
 	return true
