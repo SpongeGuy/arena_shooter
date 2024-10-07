@@ -38,9 +38,8 @@ local pentagron = polygon:create(p_vert, 0)
 local p_square = {200, 250, 150, 200, 200, 150, 250, 200, 250, 250}
 local cuber = polygon:create(p_square, 0)
 
-local p_player = {220, 286, 220, 270, 236, 270, 236, 286}
+local p_player = {330, 429, 330, 405, 354, 405, } --354, 429
 local player = create_player(p_player)
-polygon:scale(player, 1.5)
 
 print(player.center[1], player.center[2])
 
@@ -117,7 +116,7 @@ end
 function love.draw()
 	love.graphics.setColor(1, 1, 1)
 
-	love.graphics.polygon('fill', player.vertices)
+	
 	for i = 1, #player.vertices, 2 do
 		--print(player.vertices[i], player.vertices[i+1])
 	end
@@ -131,6 +130,7 @@ function love.draw()
 	if polygon:SAT_collision(player, pentagron) then
 		love.graphics.setColor(1, 0, 0)
 	end
+	love.graphics.polygon('fill', player.vertices)
 	love.graphics.polygon('fill', pentagron.vertices)
 	love.graphics.setColor(1, 1, 1)
 	if polygon:AABB_collision(player, pentagron) then

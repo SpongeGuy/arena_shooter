@@ -36,59 +36,47 @@ function polygon:SAT_collision(polygon1, polygon2)
 	local unit_vectors = {}
 	-- I AM COOKING
 	for _, polygon in ipairs(polygons) do
+		-- get slope of each side of each polygon in {x, y} format
+		local x, y
 		for i = 1, #polygon.vertices, 2 do
-			local coord1, coord2, u
 			if not polygon.vertices[i+2] then
-				-- this will get the final side of the polygon which wraps around back to the first coordinate
-				coord1 = {polygon.vertices[i], polygon.vertices[i+1]}
-				print(coord1[1], coord1[2])
-				coord2 = {polygon.vertices[1], polygon.vertices[2]}
+				-- final side, only runs once
+				y = polygon.vertices[i+1] - polygon.vertices[2]
+				x = polygon.vertices[i] - polygon.vertices[1]
 			else
-				coord1 = {polygon.vertices[i], polygon.vertices[i+1]}
-				print(coord1[1], coord1[2])
-				coord2 = {polygon.vertices[i+2], polygon.vertices[i+3]}
+				y = polygon.vertices[i+1] - polygon.vertices[i+3]
+				x = polygon.vertices[i] - polygon.vertices[i+2]
 			end
-			u = (vec2:diff_vec2(coord1, coord2))
-			x = coord1[1] - coord2[1]
-			y = coord1[2] - coord2[2]
 			table.insert(unit_vectors, x)
 			table.insert(unit_vectors, y)
-			-- unit vector is difference between two coordinates (slope vector) normalized
 		end
 	end
-	for i = 1, #unit_vectors, 2 do
-		--print(unit_vectors[i+1] / unit_vectors[i])
-	end
-	-- now that we have the unit vectors, we compare the maximum and minimum x values for each polygon relative to each axis in the table
-	-- if the maximum value of polygon1 is less than the minimum of polygon2 then there is no collision, return false
-	-- or if the max value of polygon2 is less than minimum of polygon1 then there is no collision
-	local max1 = -999999
-	local min1 = 999999
-	local max2 = -999999
-	local min2 = 999999
-	for i = 1, #unit_vectors, 2 do
-		print("unitvector:", unit_vectors[i], unit_vectors[i+1])
-		-- use dot product on each polygon's vertices
-		-- find min and max x values of projected polygons
-		for j = 1, #polygon1.vertices, 2 do
-			local x = vec2:mult_dot({unit_vectors[i], unit_vectors[i+1]}, {polygon1.vertices[j], polygon1.vertices[j+1]})
 
-			if x < min1 then min1 = x end
-			if x > max1 then max1 = x end
-			print(unit_vectors[i], unit_vectors[i+1], polygon1.vertices[j], polygon1.vertices[j+1], x, max1, min1)
+	for i = 1, #unit_vectors, 2 do
+		print(unit_vectors[i], unit_vectors[i+1])
+	end
+
+	-- do dot product of unit_vectors * each coordinate of polygons, separate max and min from polygon1 and 2
+	for i = 1, #unit_vectors, 2 do
+		--print(unit_vectors[i], unit_vectors[i+1])
+		local dots1 = {}
+		local dots2 = {}
+		for j = 1, #polygon1.vertices, 2 do
+			local dot = vec2:mult_dot({unit_vectors[i], unit_vectors[i+1]}, {polygon1.vertices[j], polygon1.vertices[j+1]})
+			print(unit_vectors[i], unit_vectors[i+1], dot)
+			table.insert(dots1, dot)
 		end
 
 		for j = 1, #polygon2.vertices, 2 do
-			local x = vec2:mult_dot({unit_vectors[i], unit_vectors[i+1]}, {polygon2.vertices[j], polygon2.vertices[j+1]})
-			if x < min2 then min2 = x end
-			if x > max2 then max2 = x end
+			local dot = vec2:mult_dot({unit_vectors[i], unit_vectors[i+1]}, {polygon2.vertices[j], polygon2.vertices[j+1]})
+			table.insert(dots2, dot)
 		end
-		if max1 < min2 then return false end
-		if max2 < min1 then return false end
-		-- print(max1)
-		-- print(max2)
-		print()
+
+		if math.max(unpack(dots1)) < math.min(unpack(dots2)) then return false end
+		if math.max(unpack(dots2)) < math.min(unpack(dots1)) then return false end
 	end
+
+	print()
 	
 	
 	return true
