@@ -38,7 +38,7 @@ local pentagron = polygon:create(p_vert, 0)
 local p_square = {200, 250, 150, 200, 200, 150, 250, 200, 250, 250}
 local cuber = polygon:create(p_square, 0)
 
-local p_player = {330, 429, 330, 405, 354, 405, } --354, 429
+local p_player = {583, 554, 583, 529, 608, 529, } --354, 429
 local player = create_player(p_player)
 
 print(player.center[1], player.center[2])

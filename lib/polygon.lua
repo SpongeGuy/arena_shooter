@@ -52,9 +52,6 @@ function polygon:SAT_collision(polygon1, polygon2)
 		end
 	end
 
-	for i = 1, #unit_vectors, 2 do
-		print(unit_vectors[i], unit_vectors[i+1])
-	end
 
 	-- do dot product of unit_vectors * each coordinate of polygons, separate max and min from polygon1 and 2
 	for i = 1, #unit_vectors, 2 do
@@ -62,13 +59,13 @@ function polygon:SAT_collision(polygon1, polygon2)
 		local dots1 = {}
 		local dots2 = {}
 		for j = 1, #polygon1.vertices, 2 do
-			local dot = vec2:mult_dot({unit_vectors[i], unit_vectors[i+1]}, {polygon1.vertices[j], polygon1.vertices[j+1]})
+			local dot = vec2:mult_dot({-unit_vectors[i+1], unit_vectors[i]}, {polygon1.vertices[j], polygon1.vertices[j+1]})
 			print(unit_vectors[i], unit_vectors[i+1], dot)
 			table.insert(dots1, dot)
 		end
 
 		for j = 1, #polygon2.vertices, 2 do
-			local dot = vec2:mult_dot({unit_vectors[i], unit_vectors[i+1]}, {polygon2.vertices[j], polygon2.vertices[j+1]})
+			local dot = vec2:mult_dot({-unit_vectors[i+1], unit_vectors[i]}, {polygon2.vertices[j], polygon2.vertices[j+1]})
 			table.insert(dots2, dot)
 		end
 
