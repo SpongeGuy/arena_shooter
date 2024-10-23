@@ -19,11 +19,11 @@ function create_player(vertices)
 	player.rotation_speed = 0
 	player.center = polygon:get_centroid(player)
 	player.bounding_box = polygon:get_bounding_box(player)
-	
+
 	player.direction = {0, 0}
 	--player.size = 24
 	player.move_speed = 250
-	
+
 	player.shot_timer = love.timer.getTime()
 	player.attack_speed = 0.1
 	player.shot_size = 8
@@ -32,12 +32,12 @@ function create_player(vertices)
 end
 
 local p_vert = {600, 400, 550, 600, 400, 520}
-local pentagron = polygon:create(p_vert, 1)
+local pentagron = polygon:create(p_vert, 0)
 
 local p_square = {200, 250, 150, 200, 200, 150, 250, 200, 250, 250}
 local cuber = polygon:create(p_square, 0)
 
-local p_player = {583, 554, 583, 529, 608, 529, 608, 554} 
+local p_player = {603, 354, 603, 329, 628, 329, 628, 354}
 local player = create_player(p_player)
 
 function player:control()
@@ -64,7 +64,7 @@ function player:shoot()
 		-- REMEMBER TO NOT INITIALIZE REFERENCES TO TABLES
 		-- direction is (player pos - mouse pos) * 500 + (player direction)
 		direction = vec2:add_vec2(vec2:mult_scalar(vec2:normalize(vec2:diff_vec2(player.center, mouse_coordinates)), 500), vec2:mult_scalar(vec2:normalize(player.direction), 250)),
-		
+
 		size = player.shot_size,
 		kill = false,
 	}
@@ -87,12 +87,12 @@ end
 function love.update(dt)
 	debug_col_testing = "false"
 	fps = love.timer.getFPS()
-	
+
 	player.direction = player:control()
 	polygon:translate(dt, player, player.direction)
 	polygon:rotate(dt, player, player.rotation_speed)
 	player.bounding_box = polygon:get_bounding_box(player)
-	
+
 	for i = #bullets, 1, -1 do
 		local b = bullets[i]
 		b:update(dt)
@@ -110,16 +110,16 @@ function love.update(dt)
 	pentagron.bounding_box = polygon:get_bounding_box(pentagron)
 
 end
-
+  
 function love.draw()
 	love.graphics.setColor(1, 1, 1)
 
-	
+
 	for i = 1, #player.vertices, 2 do
 		--print(player.vertices[i], player.vertices[i+1])
 	end
 	--polygon:debug_render_bounding_box(player)
-	
+
 	for i = #bullets, 1, -1 do
 		local b = bullets[i]
 		love.graphics.circle('fill', b.coordinates[1], b.coordinates[2], b.size)
@@ -127,30 +127,33 @@ function love.draw()
 
 	polygon:debug_render_bounding_box(pentagron)
 
-	if polygon:AABB_collision(player, pentagron) then
-		love.graphics.setColor(1, 0, 0)
-		polygon:debug_render_bounding_box(pentagron)
-		love.graphics.setColor(1, 1, 1)
-		if polygon:SAT_collision(player, pentagron) then
-			love.graphics.setColor(1, 0, 0)
-		
-			
-		end
+	--if polygon:AABB_collision(player, pentagron) then
+--		love.graphics.setColor(1, 0, 0)
+	--	polygon:debug_render_bounding_box(pentagron)
+--		love.graphics.setColor(1, 1, 1)
+	--	if polygon:SAT_collision(player, pentagron) then
+--			love.graphics.setColor(1, 0, 0)
+--
+--
+--		end
+--
+--	end
+  local collision = polygon:death(pentagron, player)
+  if (collision[1] > 0) then
+    print("collision normal: ", collision[2][1], collision[2][2])
+    love.graphics.setColor(1, 0, 0)
+    love.graphics.print(collision[2][1].." "..collision[2][2], 100, 0)
+  end
 
-	end
-
-
-	
-	
 	love.graphics.polygon('fill', pentagron.vertices)
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.polygon('fill', player.vertices)
-	
+
 	polygon:debug_render_coordinates(pentagron.vertices)
 	love.graphics.setColor(1, 1, 1)
 
 	love.graphics.polygon('fill', cuber.vertices)
-	
+
 	local v1 = {player.vertices[1], player.vertices[2]}
 	local v2 = {player.vertices[3], player.vertices[4]}
 	local m = vec2:diff_vec2(v2, v1)
@@ -164,3 +167,5 @@ function love.draw()
 	love.graphics.print(love.mouse.getX(), love.mouse.getX() + 30, love.mouse.getY() + 30)
 	love.graphics.print(love.mouse.getY(), love.mouse.getX() + 60, love.mouse.getY() + 30)
 end
+
+

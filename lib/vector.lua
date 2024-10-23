@@ -26,6 +26,10 @@ function vec2:add_vec2(vector1, vector2)
 	return nvector
 end
 
+function vec2:perpendicular(vector)
+  return {-vector[2], vector[1]}
+end
+
 function vec2:axis_projection(unit_vector, point)
 	-- projects a point onto the axis provided by the unit_vector using multiplication
 	-- local projpoint = vec2:mult_vec2(unit_vector, point)
