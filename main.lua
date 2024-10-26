@@ -37,7 +37,7 @@ local pentagron = polygon:create(p_vert, 0)
 local p_square = {200, 250, 150, 200, 200, 150, 250, 200, 250, 250}
 local cuber = polygon:create(p_square, 0)
 
-local p_player = {603, 354, 603, 329, 628, 329, 628, 354}
+local p_player = {603, 504, 603, 479, 628, 479}
 local player = create_player(p_player)
 
 function player:control()
@@ -126,24 +126,15 @@ function love.draw()
 	end
 
 	polygon:debug_render_bounding_box(pentagron)
-
-	--if polygon:AABB_collision(player, pentagron) then
---		love.graphics.setColor(1, 0, 0)
-	--	polygon:debug_render_bounding_box(pentagron)
---		love.graphics.setColor(1, 1, 1)
-	--	if polygon:SAT_collision(player, pentagron) then
---			love.graphics.setColor(1, 0, 0)
---
---
---		end
---
---	end
-  local collision = polygon:death(pentagron, player)
-  if (collision[1] > 0) then
-    print("collision normal: ", collision[2][1], collision[2][2])
-    love.graphics.setColor(1, 0, 0)
-    love.graphics.print(collision[2][1].." "..collision[2][2], 100, 0)
-  end
+	if polygon:AABB_collision(player, pentagron) then
+		local collision1 = polygon:SAT_collision3(player, pentagron)
+		local collision2 = polygon:SAT_collision3(pentagron, player)
+		if collision1 and collision2 then
+			love.graphics.print(collision1, 0, 0)
+			love.graphics.print(collision2, 0, 20)
+			love.graphics.setColor(1, 0, 0)
+		end
+	end
 
 	love.graphics.polygon('fill', pentagron.vertices)
 	love.graphics.setColor(1, 1, 1)
@@ -159,7 +150,7 @@ function love.draw()
 	local m = vec2:diff_vec2(v2, v1)
 	love.graphics.print(tostring(m[2] / m[1]), 0, 80)
 
-
+	love.graphics.print(love.timer.getFPS(), 0, 40)
 	love.graphics.setColor(0, 1, 0)
 
 	-- love.graphics.circle('fill', v1[1], v1[2], 3)

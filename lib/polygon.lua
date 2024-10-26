@@ -31,205 +31,100 @@ function polygon:AABB_collision(polygon1, polygon2)
 	return true
 end
 
-function polygon:SAT_collision(polygon1, polygon2)
-	local polygons = {polygon1, polygon2}
-	local unit_vectors = {}
-	-- I AM COOKING
-	for _, polygon in ipairs(polygons) do
-		-- get slope of each side of each polygon in {x, y} format
-		local x, y
-		for i = 1, #polygon.vertices, 2 do
-			if not polygon.vertices[i+2] then
-				-- final side, only runs once
-				y = polygon.vertices[i+1] - polygon.vertices[2]
-				x = polygon.vertices[i] - polygon.vertices[1]
-			else
-				y = polygon.vertices[i+1] - polygon.vertices[i+3]
-				x = polygon.vertices[i] - polygon.vertices[i+2]
-			end
-			table.insert(unit_vectors, x)
-			table.insert(unit_vectors, y)
-		end
-end
+function polygon:SAT_collision3(A, B)
+	-- test for A is colliding with B (vertex of A inside B)
+	-- returns nil if no collision
+	-- returns a separation value
+	-- - (the difference in space between the vertex of A and the corresponding face of B)
 
-	-- do dot product of unit_vectors * each coordinate of polygons, separate max and min from polygon1 and 2
-	for i = 1, #unit_vectors, 2 do
-		--print(unit_vectors[i], unit_vectors[i+1])
-		local dots1 = {}
-		local dots2 = {}
-		for j = 1, #polygon1.vertices, 2 do
-			local dot = vec2:mult_dot({-unit_vectors[i+1], unit_vectors[i]}, {polygon1.vertices[j], polygon1.vertices[j+1]})
-			table.insert(dots1, dot)
+	-- grab all the slopes of polygon B as (x, y) pairs
+	local slopes = {}
+	for i = 1, #B.vertices, 2 do
+		if not B.vertices[i+2] then
+			-- necessary for the last polygon face, which loops around to the first vertex
+			table.insert(slopes, B.vertices[1] - B.vertices[i])
+			table.insert(slopes, B.vertices[2] - B.vertices[i+1])
+		else
+			table.insert(slopes, B.vertices[i+2] - B.vertices[i])
+			table.insert(slopes, B.vertices[i+3] - B.vertices[i+1])
 		end
-		for j = 1, #polygon2.vertices, 2 do
-			local dot = vec2:mult_dot({-unit_vectors[i+1], unit_vectors[i]}, {polygon2.vertices[j], polygon2.vertices[j+1]})
-			table.insert(dots2, dot)
-		end
-		if math.max(unpack(dots1)) < math.min(unpack(dots2)) then return false end
-		if math.max(unpack(dots2)) < math.min(unpack(dots1)) then return false end
 	end
-	return true
-end
+	-- now calculate the normals for each polygon face/slope
+	local normalized_slopes = {}
+	for i = 1, #slopes, 2 do
+		local y = -slopes[i]
+		local x = slopes[i+1]
+		local magnitude = x
+		if magnitude == 0 then
+			y = 1
+		else
+			x = x / magnitude
+			y = y / magnitude
+		end
+		if x < 0 and y < 0 then
+			x = -x
+			y = -y
+		elseif x < 0 then
+			x = -x
+			y = -y
+		end
+		table.insert(normalized_slopes, x)
+		table.insert(normalized_slopes, y)
+	end
 
+	-- project vertices of A and B onto normals
+	-- - then find max and min value of A and B
+	
+	local separations = {}
+	for i = 1, #normalized_slopes, 2 do
+		local max_A = -math.huge
+		local min_A = math.huge
+		local max_B = -math.huge
+		local min_B = math.huge
+		local x = normalized_slopes[i]
+		local y = normalized_slopes[i+1]
+		local normal = {x, y}
+		-- find max(A) and min(A)
+		for j = 1, #A.vertices, 2 do
+			local coordinate = {A.vertices[j], A.vertices[j+1]}
+			local dot = vec2:mult_dot(normal, coordinate)
+			print(coordinate[1], coordinate[2].." | "..normal[1], normal[2].." | "..dot)
+			max_A = math.max(max_A, dot)
+			min_A = math.min(min_A, dot)
+		end
+		for j = 1, #B.vertices, 2 do
+			local coordinate = {B.vertices[j], B.vertices[j+1]}
+			local dot = vec2:mult_dot(normal, coordinate)
+			print(coordinate[1], coordinate[2].." | "..normal[1], normal[2].." | "..dot)
+			max_B = math.max(max_B, dot)
+			min_B = math.min(min_B, dot)
+		end
+		-- get all separation values
+		local sep1 = max_B - min_A
+		local sep2 = min_B - max_A
+		local sep3 = max_A - min_B
+		local sep4 = min_A - max_B
 
-function polygon:test_SAT_collision(A, B)
-  local polygons = {A, B}
-  local separation = -math.huge
-  local normals = {}
-  for _, polygon in ipairs(polygons) do
-    local fucksakes = {}
-    for i = 1, #polygon.vertices, 2 do
-      local x, y
-      if not polygon.vertices[i+2] then
-        y = polygon.vertices[i+1] - polygon.vertices[2]
-        x = polygon.vertices[i] - polygon.vertices[1]
-      else
-        y = polygon.vertices[i+1] - polygon.vertices[i+3]
-        x = polygon.vertices[i] - polygon.vertices[i+2]
-      end
-      local magnitude = x
-      if magnitude == 0 then
-        magnitude = 1
-        y = y / y
-      end
-      print("polygon slope vector: ", -y, x)
-      table.insert(fucksakes, -y/magnitude)
-      table.insert(fucksakes, x/magnitude)
-    end
-    -- this way, each polygon has a list of normals
-    -- figure out a way to delete copies of normals later
-    table.insert(normals, fucksakes)
-  end
-
-  local min_separation = math.huge
-  for p = 1, #polygons do
-    local polygon = polygons[p]
-    for i = 1, #normals, 2 do
-      if normals[p][i] < 0 and normals[p][i+1] < 0 then
-        normals[p][i] = -normals[p][i]
-        normals[p][i+1] = -normals[p][i+1]
-      end
-      local normal = {normals[p][i], normals[p][i+1]}
-      print("normals", normal[1], normal[2])
-      local A_projected = {}
-      local B_projected = {}
-      for x = 1, #A.vertices, 2 do
-        local vector = {A.vertices[x], A.vertices[x+1]}
-        local proj = vec2:mult_dot(normal, vector)
-        table.insert(A_projected, proj)
-      end
-      for x = 1, #B.vertices, 2 do
-        local vector = {B.vertices[x], B.vertices[x+1]}
-        local proj = vec2:mult_dot(normal, vector)
-        table.insert(B_projected, proj)
-      end
-      local A_max = math.max(unpack(A_projected))
-      local A_min = math.min(unpack(A_projected))
-      local B_max = math.max(unpack(B_projected))
-      local B_min = math.min(unpack(B_projected))
-      print(i, A_max, A_min, B_max, B_min)
-      print(i, A_max - B_min, B_max - A_min)
-      min_separation = math.min(min_separation, A_max - B_min, B_max - A_min)
-      print("min_sep: ", min_separation)
-    end
-    if math.abs(min_separation) > separation then
-      separation = min_separation
-    end
-  end
-  print("separation:", separation)
-  return separation
-end
-
-function polygon:death(A, B)
-  local polygons = {A, B}
-  local unit_vectors = {}
-  for _, polygon in ipairs(polygons) do
-    local x, y
-    for i = 1, #polygon.vertices, 2 do
-			if not polygon.vertices[i+2] then
-				-- final side, only runs once
-				y = polygon.vertices[i+1] - polygon.vertices[2]
-				x = polygon.vertices[i] - polygon.vertices[1]
-			else
-				y = polygon.vertices[i+1] - polygon.vertices[i+3]
-				x = polygon.vertices[i] - polygon.vertices[i+2]
-			end
-      local magnitude = x
-      if magnitude == 0 then
-        magnitude = 1
-        y = 1
-      end
-			table.insert(unit_vectors, x/magnitude)
-			table.insert(unit_vectors, y/magnitude)
-    end
-  end
-
-  local separation = 0
-  local relevant_normal = {}
-  local separations = {}
-
-  for i = 1, #unit_vectors, 2 do
-    local A_max = -math.huge
-    local B_max = -math.huge
-    local A_min = math.huge
-    local B_min = math.huge
-
-    local normal = {-unit_vectors[i+1], unit_vectors[i]}
-    if (normal[1] < 0 and normal[2] < 0) then
-      normal[1] = -normal[1]
-      normal[2] = -normal[2]
-    end
-
-    local min_separation = math.huge
-
-    for j = 1, #A.vertices, 2 do
-      local coordinate = {A.vertices[j], A.vertices[j+1]}
-      print(vec2:mult_dot(normal, coordinate))
-      A_min = math.min(A_min, vec2:mult_dot(normal, coordinate))
-      A_max = math.max(A_max, vec2:mult_dot(normal, coordinate))
-
-    end
-    for j = 1, #B.vertices, 2 do
-      local coordinate = {B.vertices[j], B.vertices[j+1]}
-      B_min = math.min(B_min, vec2:mult_dot(normal, coordinate))
-      B_max = math.max(B_max, vec2:mult_dot(normal, coordinate))
-    end
-    print("normal: ", normal[1], normal[2])
-    print(i, A_max, A_min, B_max, B_min)
-    print(i, A_max - B_min, B_max - A_min)
-    min_separation = math.min(min_separation, A_max - B_min, B_max - A_min)
-    print("min_sep:", min_separation)
-    table.insert(separations, min_separation)
-    table.insert(separations, normal)
-  end
-
-  local is_colliding = true
-  for i = 1, #separations, 2 do
-    local value = separations[i]
-    if (value < 0) then is_colliding = false end
-  end
-
-  if (is_colliding) then
-    for i = 1, #separations, 2 do
-      local value = separations[i]
-      local normal = separations[i+1]
-      if (value > separation) then
-        separation = value
-        relevant_normal = normal
-      end
-    end
-  else
-    for i = 1, #separations, 2 do
-      local value = separations[i]
-      local normal = separations[i+1]
-      if (value < separation) then
-        separation = value
-        relevant_normal = normal
-      end
-    end
-  end
-  print()
-  return {separation, relevant_normal}
+		print("sep "..i.." ", sep1, sep2, sep3, sep4)
+		if (sep1 < 0 and sep2 < 0) or (sep3 < 0 and sep4 < 0) then
+			-- if a collision is not happening in at least one instance, then return
+			-- there is no point in continuing the iteration
+			return
+		end
+		-- collect all the negative separation values
+		-- if there is a collision, sep1 and sep3 will always be positive, sep2 and sep4 will always be negative
+		-- the negative ones are the ones we need to calculate a minimum translation vector
+		if sep2 < 0 and sep4 < 0 then
+			table.insert(separations, sep2)
+			table.insert(separations, sep4)
+		end
+	end
+	-- now find the greatest separation value
+	local max_sep = -math.huge
+	for i = 1, #separations do
+		max_sep = math.max(max_sep, separations[i])
+	end
+	return math.abs(max_sep)
 end
 
 
