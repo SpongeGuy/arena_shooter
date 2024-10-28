@@ -31,13 +31,14 @@ function polygon:AABB_collision(polygon1, polygon2)
 	return true
 end
 
-function polygon:SAT_collision3(A, B)
+function polygon:SAT_collision(A, B)
 	-- test for A is colliding with B (vertex of A inside B)
 	-- returns nil if no collision
 	-- returns a separation value
 	-- - (the difference in space between the vertex of A and the corresponding face of B)
 
 	-- grab all the slopes of polygon B as (x, y) pairs
+
 	local slopes = {}
 	for i = 1, #B.vertices, 2 do
 		if not B.vertices[i+2] then
@@ -49,25 +50,29 @@ function polygon:SAT_collision3(A, B)
 			table.insert(slopes, B.vertices[i+3] - B.vertices[i+1])
 		end
 	end
+	-- if side of B is perfectly flat, then find out which side of the shape its on so the normal can be corrected
+
 	-- now calculate the normals for each polygon face/slope
 	local normalized_slopes = {}
 	for i = 1, #slopes, 2 do
 		local y = -slopes[i]
 		local x = slopes[i+1]
-		local magnitude = x
+		print("1",x, y)
+		-- do some number manip to avoid inf/nan values
+		local magnitude = math.abs(x)
 		if magnitude == 0 then
 			y = 1
 		else
 			x = x / magnitude
 			y = y / magnitude
 		end
-		if x < 0 and y < 0 then
-			x = -x
-			y = -y
-		elseif x < 0 then
-			x = -x
-			y = -y
+		print("2",x, y)
+		if math.abs(y) > x and y ~= 0 then
+			magnitude = math.abs(y)
+			x = x / magnitude
+			y = y / magnitude
 		end
+		print("3",x, y)
 		table.insert(normalized_slopes, x)
 		table.insert(normalized_slopes, y)
 	end
@@ -81,31 +86,26 @@ function polygon:SAT_collision3(A, B)
 		local min_A = math.huge
 		local max_B = -math.huge
 		local min_B = math.huge
-		local x = normalized_slopes[i]
-		local y = normalized_slopes[i+1]
-		local normal = {x, y}
-		-- find max(A) and min(A)
+		local normal = {normalized_slopes[i], normalized_slopes[i+1]}
+		--print("normal", normal[1], normal[2])
+		-- find max(A) and min(A) projected onto the normal
 		for j = 1, #A.vertices, 2 do
-			local coordinate = {A.vertices[j], A.vertices[j+1]}
-			local dot = vec2:mult_dot(normal, coordinate)
-			print(coordinate[1], coordinate[2].." | "..normal[1], normal[2].." | "..dot)
+			local dot = vec2:mult_dot(normal, {A.vertices[j], A.vertices[j+1]})
 			max_A = math.max(max_A, dot)
 			min_A = math.min(min_A, dot)
 		end
 		for j = 1, #B.vertices, 2 do
-			local coordinate = {B.vertices[j], B.vertices[j+1]}
-			local dot = vec2:mult_dot(normal, coordinate)
-			print(coordinate[1], coordinate[2].." | "..normal[1], normal[2].." | "..dot)
+			local dot = vec2:mult_dot(normal, {B.vertices[j], B.vertices[j+1]})
 			max_B = math.max(max_B, dot)
 			min_B = math.min(min_B, dot)
 		end
 		-- get all separation values
+
 		local sep1 = max_B - min_A
 		local sep2 = min_B - max_A
 		local sep3 = max_A - min_B
 		local sep4 = min_A - max_B
-
-		print("sep "..i.." ", sep1, sep2, sep3, sep4)
+		print(normal[1], normal[2], sep1, sep2, sep3, sep4)
 		if (sep1 < 0 and sep2 < 0) or (sep3 < 0 and sep4 < 0) then
 			-- if a collision is not happening in at least one instance, then return
 			-- there is no point in continuing the iteration
@@ -116,15 +116,21 @@ function polygon:SAT_collision3(A, B)
 		-- the negative ones are the ones we need to calculate a minimum translation vector
 		if sep2 < 0 and sep4 < 0 then
 			table.insert(separations, sep2)
+			table.insert(separations, normal)
 			table.insert(separations, sep4)
+			table.insert(separations, normal)
 		end
 	end
 	-- now find the greatest separation value
 	local max_sep = -math.huge
-	for i = 1, #separations do
-		max_sep = math.max(max_sep, separations[i])
+	local normal
+	for i = 1, #separations, 2 do
+		if separations[i] >= max_sep then
+			max_sep = separations[i]
+			normal = separations[i+1]
+		end
 	end
-	return math.abs(max_sep)
+	return {math.abs(max_sep), normal}
 end
 
 
