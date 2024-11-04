@@ -34,7 +34,7 @@ end
 local p_vert = {400, 520, 600, 400, 550, 600}
 local p_side = {500, 1000, 500, 250, 1000, 250}
 local p_side_alt = {495, 900, 500, 250, 1500, 255}
-local pentagron = polygon:create(p_vert, 0)
+local pentagron = polygon:create(p_side, 0)
 
 local p_square = {200, 250, 150, 200, 200, 150, 250, 200, 250, 250}
 local cuber = polygon:create(p_square, 0)
@@ -135,7 +135,7 @@ function SAT_col_dr(A, B, rA, rB)
 				-- vertex of A inside B
 				--cr_zip(col1[1], col1[2], A)
 			elseif col1[1] > col2[1] then
-				--cr_zip(col2[1], col2[2], A)
+				-- cr_zip(col2[1], col2[2], A)
 			else
 				-- vertex of B inside A
 				--tcr_zip(col1[1], col1[2], A)

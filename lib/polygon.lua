@@ -32,7 +32,7 @@ function polygon:AABB_collision(polygon1, polygon2)
 end
 
 function polygon:SAT_collision(A, B)
-	-- test for A is colliding with B (vertex of A inside B)
+	-- test for A is colliding with B (vertex of A inside face of B)
 	-- returns nil if no collision
 	-- returns a separation value
 	-- - (the difference in space between the vertex of A and the corresponding face of B)
@@ -57,22 +57,19 @@ function polygon:SAT_collision(A, B)
 	for i = 1, #slopes, 2 do
 		local y = -slopes[i]
 		local x = slopes[i+1]
-		print("1",x, y)
 		-- do some number manip to avoid inf/nan values
 		local magnitude = math.abs(x)
 		if magnitude == 0 then
-			y = 1
+			y = y / math.abs(y)
 		else
 			x = x / magnitude
 			y = y / magnitude
 		end
-		print("2",x, y)
 		if math.abs(y) > x and y ~= 0 then
 			magnitude = math.abs(y)
 			x = x / magnitude
 			y = y / magnitude
 		end
-		print("3",x, y)
 		table.insert(normalized_slopes, x)
 		table.insert(normalized_slopes, y)
 	end
@@ -99,8 +96,8 @@ function polygon:SAT_collision(A, B)
 			max_B = math.max(max_B, dot)
 			min_B = math.min(min_B, dot)
 		end
-		-- get all separation values
 
+		-- get all separation values
 		local sep1 = max_B - min_A
 		local sep2 = min_B - max_A
 		local sep3 = max_A - min_B
@@ -117,6 +114,7 @@ function polygon:SAT_collision(A, B)
 		if sep2 < 0 and sep4 < 0 then
 			table.insert(separations, sep2)
 			table.insert(separations, normal)
+			-- sep2 will always have the correct value for x and y normals (for flat surfaces), so we don't include it in this table
 			table.insert(separations, sep4)
 			table.insert(separations, normal)
 		end
@@ -132,6 +130,12 @@ function polygon:SAT_collision(A, B)
 	end
 	return {math.abs(max_sep), normal}
 end
+
+-- if normal is x=1 y=0 (aligned to the x axis):
+-- - get centroid of polygon (cx and cy)
+-- - compare vertex which is part of the slope used to calculate normal (call this x' and y')
+-- - if x' < cx then the normal should be fixed to equal x=-1 y=0
+-- - if x' > cx then the normal should be x=1 y=0
 
 
 function polygon:get_centroid(A)
